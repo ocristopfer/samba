@@ -20,8 +20,9 @@ RUN apt-get update && \
     && rm -rf /var/lib/apt/lists/* \
     && apt-get clean
 
-# Criar usuário não-root
-RUN useradd -r -s /bin/false -d /var/lib/samba sambauser
+# Criar usuário não-root com UID/GID 1000
+RUN groupadd -g 1000 sambauser && \
+    useradd -r -u 1000 -g 1000 -s /bin/false -d /var/lib/samba sambauser
 
 # Criar diretórios necessários
 RUN mkdir -p /shared \
