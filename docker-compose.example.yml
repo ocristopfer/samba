@@ -1,0 +1,74 @@
+version: '3.8'
+
+services:
+  samba-server:
+    build: 
+      context: ./src
+      dockerfile: Dockerfile
+    container_name: samba-multiuser
+    hostname: samba-server
+    
+    # Network configuration
+    ports:
+      - "139:139"       # NetBIOS Session Service
+      - "445:445"       # SMB over TCP
+      - "137:137/udp"   # NetBIOS Name Service
+      - "138:138/udp"   # NetBIOS Datagram Service
+    
+    # Volume mounts
+    volumes:
+      - ./shared:/shared                    # Main shared directory
+      - samba-logs:/var/log/samba          # Samba logs (persistent)
+      - supervisor-logs:/var/log/supervisor # Supervisor logs
+    
+    # Environment variables for multiple users
+    environment:
+      # Multiple users (space-separated)
+      - SAMBA_USERS=alice bob charlie admin
+      - SAMBA_PASSWORDS=alice123 bob456 charlie789 admin999
+      
+      # Directory permissions (755, 775, 777)
+      - SHARED_FOLDER_PERMISSIONS=775
+      
+      # Network settings
+      - WORKGROUP=WORKGROUP
+      
+      # User ID settings (optional)
+      - DEFAULT_UID=1000
+      - DEFAULT_GID=1000
+    
+    # Container settings
+    restart: unless-stopped
+    
+    # Resource limits (optional)
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: '1.0'
+        reservations:
+          memory: 256M
+          cpus: '0.5'
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "smbclient", "-L", "localhost", "-U", "alice%alice123", "-N"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+# Named volumes for persistence
+volumes:
+  samba-logs:
+    driver: local
+  supervisor-logs:
+    driver: local
+
+# Networks (optional - for advanced setups)
+# networks:
+#   samba-net:
+#     driver: bridge
+#     ipam:
+#       config:
+#         - subnet: 172.20.0.0/24
