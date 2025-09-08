@@ -9,11 +9,11 @@ services:
     hostname: samba-server
     
     # Network configuration
-    ports:
-      - "139:139"       # NetBIOS Session Service
-      - "445:445"       # SMB over TCP
-      - "137:137/udp"   # NetBIOS Name Service
-      - "138:138/udp"   # NetBIOS Datagram Service
+    # ports:
+    #   - "139:139"       # NetBIOS Session Service
+    #   - "445:445"       # SMB over TCP
+    #   - "137:137/udp"   # NetBIOS Name Service
+    #   - "138:138/udp"   # NetBIOS Datagram Service
     
     # Volume mounts
     volumes:
